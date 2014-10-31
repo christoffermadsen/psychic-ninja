@@ -1,5 +1,6 @@
 # Defining the backbone of all creatures
 class Creature
+  $livingmonsters = []
   def self.metaclass
     class << self
       self
@@ -7,6 +8,7 @@ class Creature
   end
   
   def self.traits( *args )
+    # If no arguments are found, then return list of current traits
     return @traits if args.empty?
     
     # Set up the attribute accessor methods for the traits
@@ -28,6 +30,7 @@ class Creature
           instance_variable_set("@#{trait}",value)
           puts "The trait [#{trait}] of [#{self}] has been set to [#{value}]."
         end
+        $livingmonsters.push( self )
       end
     end
   end
@@ -46,17 +49,31 @@ class Creature
     # Maybe remove this?
     if @life <= 0
       puts "#{self} died!"
+      # Remove dead monster from the list of living monsters
+      $livingmonsters.delete( self )
     end
   end
   def fight( target )
     # Check if the fighter is alive
-    if life <= 0
+    if self.life <= 0
       puts "[#{ self.class } is dead and cannot fight!]"
+      return
+    end
+    
+    # Check if target is already dead
+    if target.life <= 0
+      puts "[Gah. #{target} is already dead!]"
+      return
     end
     
     # Calculate the strength of the hit and hit the enemy with it!
     player_hit = rand( strength * 2 )
-    puts "[Hit calculated to #{player_hit} points of damage.]"
+    # Check if the player hit himself
+    if self == target
+      puts "[You hit yourself with #{player_hit} points of damage.]"
+    else
+      puts "[Hit calculated to #{player_hit} points of damage.]"
+    end
     target.hit( player_hit )
     
     # Check if target died
